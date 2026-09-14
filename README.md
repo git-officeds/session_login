@@ -99,6 +99,7 @@
       'xampp' => [
           'users_file'   => 'C:/xampp/private/auth_users.php',
           'throttle_dir' => 'C:/xampp/private/parts_admin_throttle',
+          'session_path' => '',   // 空文字ならPHPの既定値（XAMPPはそのままでOK）
       ],
 
   C:/xampp/private/ は C:/xampp/htdocs/ の外なので、Web からは到達できない。
@@ -121,6 +122,7 @@
       'production' => [
           'users_file'   => '/home/users/web12/7/6/0282367/private/auth_users.php',
           'throttle_dir' => '/home/users/web12/7/6/0282367/private/parts_admin_throttle',
+          'session_path' => '/home/users/web12/7/6/0282367/private/sessions',
       ],
 
   ★共有サーバーでは PHP から読み書きできるパスが open_basedir で
@@ -131,6 +133,16 @@
   ★private/auth_users.php・parts_admin_throttle/ のパーミッションは
     700（所有者のみ）を推奨。throttle 側は PHP の実行ユーザーから
     書き込み可能であることを確認する。
+
+  ★session_path について:
+    共用サーバーはサーバー既定の session.save_path（例: /home/var/php/...）が
+    このアカウントから書き込めない、または存在しないことがあり、その場合
+    ログイン時に session_regenerate_id() が失敗して「ログインできない」
+    「ログイン後に何度もログイン画面へ戻される」といった事故になる。
+    session_path をアカウント配下の書き込み可能なディレクトリに指定して
+    おくと、auth.php が session_start() 前に自動でフォルダを作成し
+    session_save_path() で明示的に切り替えるため、この事故を回避できる。
+    （フォルダが自動作成できない場合は、FTP 等で 700 権限で手動作成する）
 
 
 ------------------------------------------------------------------------------
@@ -171,6 +183,7 @@ private/auth_users.php に、次の内容で作成する（★Web 公開フォ�
     users_file   資格情報ファイルの絶対パス（★公開ディレクトリ外）
     throttle_dir ログイン失敗記録の保存先（★公開ディレクトリ外）
     error_log    PHPエラーログの出力先（空文字ならサーバー既定を使用）
+    session_path セッション保存先（★公開ディレクトリ外。空文字ならPHPの既定値）
 
   新しい本番サーバーを追加する場合は、APP_STAGE_CONFIG にキーを
   追加して APP_STAGE を切り替えるだけでよい。
@@ -181,9 +194,10 @@ private/auth_users.php に、次の内容で作成する（★Web 公開フォ�
 ------------------------------------------------------------------------------
 
   config.php:
-    APP_STAGE                                     // 'production' に変更
-    APP_STAGE_CONFIG['production']['users_file']  // 公開フォルダ外の絶対パス
-    APP_STAGE_CONFIG['production']['throttle_dir']// 公開フォルダ外の絶対パス
+    APP_STAGE                                       // 'production' に変更
+    APP_STAGE_CONFIG['production']['users_file']    // 公開フォルダ外の絶対パス
+    APP_STAGE_CONFIG['production']['throttle_dir']  // 公開フォルダ外の絶対パス
+    APP_STAGE_CONFIG['production']['session_path']  // 公開フォルダ外の絶対パス
 
   auth.php:
     const AUTH_LOGIN_PAGE   = 'login.php';        // フォームのパス（相対 URL）
@@ -216,6 +230,8 @@ private/auth_users.php に、次の内容で作成する（★Web 公開フォ�
   ・共通セキュリティヘッダー（X-Frame-Options / CSP frame-ancestors /
     X-Content-Type-Options / Referrer-Policy / COOP / no-store / HSTS）
   ・資格情報・失敗記録を公開ディレクトリ外（private/）に分離
+  ・共用サーバーのセッション保存先問題への対策（session_path で明示指定。
+    PHP 8.4 の sid_length 等 Deprecated 警告も抑止済み）
 
 前提: 本番は必ずサイト全体を HTTPS 化すること（Cookie secure が有効になる）。
 

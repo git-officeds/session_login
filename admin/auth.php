@@ -120,8 +120,17 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     ini_set('session.use_strict_mode', '1');   // 未初期化セッションIDを拒否（固定攻撃の追加防御）
     ini_set('session.use_only_cookies', '1');  // URL 埋め込みセッションID禁止
     ini_set('session.cookie_httponly', '1');
-    ini_set('session.sid_length', '48');
-    ini_set('session.sid_bits_per_character', '6');
+    @ini_set('session.sid_length', '48');
+    @ini_set('session.sid_bits_per_character', '6');
+
+    // サーバー既定のセッション保存先が書き込み不可な場合に備え、
+    // アカウント配下の書き込み可能なディレクトリを明示的に指定する。
+    if (AUTH_SESSION_SAVE_PATH !== '') {
+        if (!is_dir(AUTH_SESSION_SAVE_PATH)) {
+            @mkdir(AUTH_SESSION_SAVE_PATH, 0700, true);
+        }
+        session_save_path(AUTH_SESSION_SAVE_PATH);
+    }
 
     session_name(AUTH_SESSION_NAME);
 

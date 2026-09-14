@@ -35,6 +35,7 @@ const APP_STAGE_CONFIG = [
         'users_file'   => 'C:/xampp/private/auth_users.php',
         'throttle_dir' => 'C:/xampp/private/parts_admin_throttle',
         'error_log'    => '',
+        'session_path' => '',   // 空文字ならPHPの既定値を使用
     ],
 
     // 本番サーバー（www.wakobussan.jp）
@@ -46,6 +47,9 @@ const APP_STAGE_CONFIG = [
         'users_file'   => '/home/users/web12/7/6/0282367/private/auth_users.php',
         'throttle_dir' => '/home/users/web12/7/6/0282367/private/parts_admin_throttle',
         'error_log'    => '/home/users/web12/7/6/0282367/private/logs/parts_admin_error.log',
+        // サーバー既定のセッション保存先が書き込み不可／存在しないことがあるため、
+        // アカウント配下の書き込み可能なディレクトリを明示的に指定する。
+        'session_path' => '/home/users/web12/7/6/0282367/private/sessions',
     ],
 
 ];
@@ -57,5 +61,6 @@ define('APP_ENV', $__stage['env']);
 define('AUTH_USERS_FILE', $__stage['users_file']);
 define('AUTH_THROTTLE_DIR', $__stage['throttle_dir']);
 define('AUTH_ERROR_LOG', $__stage['error_log']);
+define('AUTH_SESSION_SAVE_PATH', $__stage['session_path'] ?? '');
 
 unset($__stage);
