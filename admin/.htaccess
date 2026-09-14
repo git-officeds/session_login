@@ -1,0 +1,26 @@
+# parts_admin  ―  Web 公開時の保護設定
+
+# ディレクトリ一覧を無効化
+Options -Indexes
+
+# ドキュメント類・設定ファイルへの直接アクセスを禁止
+<FilesMatch "\.(md|markdown|json|lock|dist|ini|log|sql|bak|orig|sample)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ドットファイル（.htaccess / .git など）へのアクセスを禁止
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

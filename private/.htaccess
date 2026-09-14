@@ -1,0 +1,11 @@
+# このフォルダは本来 Web 公開領域の外に配置するため、通常は Apache から
+# 直接参照されることはない。誤って公開ディレクトリの中や配下に置かれて
+# しまった場合の保険として、念のため全アクセスを拒否する。
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
